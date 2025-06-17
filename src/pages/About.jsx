@@ -330,7 +330,7 @@ const About = () => {
                   <a href="https://www.linkedin.com/in/suman-panja-934694314/" target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm rounded-circle mx-1">
                     <i className="fab fa-linkedin-in"></i>
                   </a>
-                  <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm rounded-circle mx-1">
+                  <a href="https://x.com/panjasuman2005" target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm rounded-circle mx-1">
                     <i className="fab fa-x-twitter"></i>
                   </a>
                   <a href="mailto:sumanpanja2005@gmail.com" target="_blank" rel="noopener noreferrer" className="btn btn-outline-primary btn-sm rounded-circle mx-1">
