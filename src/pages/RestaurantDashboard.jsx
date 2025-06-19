@@ -222,9 +222,9 @@ const RestaurantDashboard = () => {
                 </table>
               </div>
             </div>
-            <div className="card-footer bg-white text-center">
+            {/* <div className="card-footer bg-white text-center">
               <Link to="/donations" className="text-decoration-none">View All Donations</Link>
-            </div>
+            // </div> */}
           </div>
         </div>
         
