@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import mockDonations from '../mock/mockDonations';
 
 const DonationDetail = () => {
   const { id } = useParams();
@@ -10,41 +11,11 @@ const DonationDetail = () => {
   const [pickupTime, setPickupTime] = useState('');
   const [notes, setNotes] = useState('');
   
-  // Mock data - in a real app, this would be fetched from an API
   useEffect(() => {
-    // Simulate API fetch with timeout
+    setLoading(true);
     setTimeout(() => {
-      // Mock donation details
-      const mockDonation = {
-        id: parseInt(id),
-        restaurantName: 'Green Garden Restaurant',
-        restaurantId: 101,
-        foodItems: 'Rice, Curry, Mixed Vegetables',
-        foodType: 'Cooked Meals',
-        quantity: '10 kg',
-        servings: 20,
-        distance: 2.5,
-        expiryTime: 12, // hours
-        pickupWindow: '18:00 - 20:00',
-        address: '123 Main St, Eco City',
-        postedTime: '2 hours ago',
-        specialInstructions: 'Contains allergens: nuts, dairy',
-        contactPerson: 'Food Bridge',
-        contactPhone: '+91 (123) 456-7890',
-        isNew: true,
-        description: 'We have excess food from a catering event. Food was prepared fresh this morning and properly stored. Includes rice, mixed vegetables curry, and some side dishes. All items are vegetarian. Food needs to be picked up by this evening.',
-        availablePickupTimes: [
-          '17:00 - 18:00',
-          '18:00 - 19:00',
-          '19:00 - 20:00',
-        ],
-        images: [
-          'https://images.unsplash.com/photo-1574484284002-952d92456975?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-          'https://images.unsplash.com/photo-1574484284002-952d92456975?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
-        ]
-      };
-      
-      setDonation(mockDonation);
+      const donation = mockDonations.find(d => d.id === parseInt(id));
+      setDonation(donation);
       setLoading(false);
     }, 1000);
   }, [id]);
@@ -137,7 +108,7 @@ const DonationDetail = () => {
                     </li>
                     <li className="list-group-item px-0">
                       <i className="fas fa-users me-2 text-primary"></i>
-                      <strong>Estimated Servings:</strong> {donation.servings}
+                      <strong>Estimated Servings:</strong> {donation.servings || 'N/A'}
                     </li>
                   </ul>
                 </div>
@@ -171,7 +142,7 @@ const DonationDetail = () => {
               
               <h5 className="card-subtitle mb-3 fw-bold">Images</h5>
               <div className="row mb-4">
-                {donation.images.map((img, index) => (
+                {(donation.images || []).map((img, index) => (
                   <div key={index} className="col-md-6 mb-3">
                     <img 
                       src={img} 
@@ -212,8 +183,8 @@ const DonationDetail = () => {
                   <i className="fas fa-user fa-2x"></i>
                 </div>
                 <div>
-                  <h6 className="mb-1">{donation.contactPerson}</h6>
-                  <p className="mb-0">{donation.contactPhone}</p>
+                  <h6 className="mb-1">{donation.contactPerson || 'Contact not specified'}</h6>
+                  <p className="mb-0">{donation.contactPhone || 'Phone not specified'}</p>
                 </div>
               </div>
             </div>
@@ -250,7 +221,7 @@ const DonationDetail = () => {
                       required
                     >
                       <option value="">Select a time slot</option>
-                      {donation.availablePickupTimes.map((time, index) => (
+                      {(donation.availablePickupTimes || []).map((time, index) => (
                         <option key={index} value={time}>{time}</option>
                       ))}
                     </select>
