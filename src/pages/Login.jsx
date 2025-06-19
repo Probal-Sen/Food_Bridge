@@ -35,7 +35,13 @@ const Login = () => {
         navigate('/ngo/dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred during login');
+      if (err.response) {
+        setError(err.response.data?.message || 'An error occurred during login');
+      } else if (err.message) {
+        setError('Network error: ' + err.message);
+      } else {
+        setError('An unknown error occurred during login');
+      }
     } finally {
       setLoading(false);
     }
