@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import mockDonations from '../mock/mockDonations';
 
 const NGODashboard = () => {
   // Mock data - in a real app, this would come from an API
@@ -11,38 +12,7 @@ const NGODashboard = () => {
     restaurantPartners: 12,
   });
 
-  const [nearbyDonations] = useState([
-    {
-      id: 1,
-      restaurantName: 'Green Garden Restaurant',
-      foodItems: 'Rice, Curry, Mixed Vegetables',
-      quantity: '10 kg',
-      distance: '2.5 km',
-      expiryTime: '12 hours',
-      pickupWindow: '18:00 - 20:00',
-      isNew: true
-    },
-    {
-      id: 2,
-      restaurantName: 'Sunshine Café',
-      foodItems: 'Sandwiches, Pastries, Fruit Salad',
-      quantity: '5 kg',
-      distance: '3.2 km',
-      expiryTime: '16 hours',
-      pickupWindow: '19:00 - 21:00',
-      isNew: true
-    },
-    {
-      id: 3,
-      restaurantName: 'Royal Spice',
-      foodItems: 'Bread, Pasta, Salad',
-      quantity: '6 kg',
-      distance: '4.1 km',
-      expiryTime: '24 hours',
-      pickupWindow: '20:00 - 22:00',
-      isNew: false
-    }
-  ]);
+  const [nearbyDonations] = useState(mockDonations);
 
   const [scheduledPickups] = useState([
     {

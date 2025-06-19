@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import mockDonations from '../mock/mockDonations';
 
 const ViewDonations = () => {
   // State for storing donations, filters, and sorting
@@ -15,105 +16,10 @@ const ViewDonations = () => {
 
   // Mock data - in a real app, this would be fetched from an API
   useEffect(() => {
-    // Simulate API fetch
-    setTimeout(() => {
-      const mockDonations = [
-        {
-          id: 1,
-          restaurantName: 'Green Garden Restaurant',
-          restaurantId: 101,
-          foodItems: 'Rice, Curry, Mixed Vegetables',
-          foodType: 'Cooked Meals',
-          quantity: '10 kg',
-          distance: 2.5,
-          expiryTime: 12, // hours
-          pickupWindow: '18:00 - 20:00',
-          address: '123 Main St, Eco City',
-          postedTime: '2 hours ago',
-          specialInstructions: 'Contains allergens: nuts, dairy',
-          isNew: true
-        },
-        {
-          id: 2,
-          restaurantName: 'Sunshine Café',
-          restaurantId: 102,
-          foodItems: 'Sandwiches, Pastries, Fruit Salad',
-          foodType: 'Bakery Items',
-          quantity: '5 kg',
-          distance: 3.2,
-          expiryTime: 16, // hours
-          pickupWindow: '19:00 - 21:00',
-          address: '456 Park Ave, Eco City',
-          postedTime: '3 hours ago',
-          specialInstructions: '',
-          isNew: true
-        },
-        {
-          id: 3,
-          restaurantName: 'Royal Spice',
-          restaurantId: 103,
-          foodItems: 'Bread, Pasta, Salad',
-          foodType: 'Mixed Items',
-          quantity: '6 kg',
-          distance: 4.1,
-          expiryTime: 24, // hours
-          pickupWindow: '20:00 - 22:00',
-          address: '789 Oak St, Eco City',
-          postedTime: '5 hours ago',
-          specialInstructions: 'Refrigeration required',
-          isNew: false
-        },
-        {
-          id: 4,
-          restaurantName: 'Urban Kitchen',
-          restaurantId: 104,
-          foodItems: 'Pizza, Garlic Bread, Salads',
-          foodType: 'Cooked Meals',
-          quantity: '8 kg',
-          distance: 1.8,
-          expiryTime: 6, // hours
-          pickupWindow: '17:00 - 19:00',
-          address: '321 Elm St, Eco City',
-          postedTime: '1 hour ago',
-          specialInstructions: '',
-          isNew: true
-        },
-        {
-          id: 5,
-          restaurantName: 'Fresh Bites',
-          restaurantId: 105,
-          foodItems: 'Wraps, Soups, Desserts',
-          foodType: 'Mixed Items',
-          quantity: '7 kg',
-          distance: 5.5,
-          expiryTime: 18, // hours
-          pickupWindow: '18:30 - 20:30',
-          address: '567 Maple Ave, Eco City',
-          postedTime: '4 hours ago',
-          specialInstructions: 'Contains allergens: gluten, dairy',
-          isNew: false
-        },
-        {
-          id: 6,
-          restaurantName: 'Sea Breeze Restaurant',
-          restaurantId: 106,
-          foodItems: 'Fish, Rice, Vegetables',
-          foodType: 'Cooked Meals',
-          quantity: '9 kg',
-          distance: 6.2,
-          expiryTime: 8, // hours
-          pickupWindow: '19:30 - 21:30',
-          address: '890 Pine Rd, Eco City',
-          postedTime: '2 hours ago',
-          specialInstructions: 'Contains seafood',
-          isNew: false
-        }
-      ];
-
-      setDonations(mockDonations);
-      setFilteredDonations(mockDonations);
-      setLoading(false);
-    }, 1000);
+    // Use shared mockDonations
+    setDonations(mockDonations);
+    setFilteredDonations(mockDonations);
+    setLoading(false);
   }, []);
 
   // Apply filters and sorting
