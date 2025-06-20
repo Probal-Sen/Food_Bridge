@@ -56,15 +56,15 @@ const userSchema = new mongoose.Schema({
   },
   verificationDocument: {
     type: String,  // URL/path to the uploaded document
-    required: true
+    default: null
   },
   verificationNumber: {
     type: String,  // FSSAI number for restaurants, Registration number for NGOs
-    required: true
+    default: null
   },
   verificationExpiry: {
     type: Date,
-    required: true
+    default: null
   },
   verificationRejectionReason: {
     type: String,
