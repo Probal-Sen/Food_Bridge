@@ -195,14 +195,23 @@ export const profileService = {
   },
 
   updateProfile: async (profileData) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const user = authService.getCurrentUser();
-        const updatedUser = { ...user, ...profileData };
-        localStorage.setItem('user', JSON.stringify(updatedUser));
-        resolve(updatedUser);
-      }, 1000);
-    });
+    try {
+      const response = await api.patch('/profile', profileData);
+      const updatedUser = response.data;
+      
+      // Update localStorage with the new user data
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      // Dispatch profile update event
+      window.dispatchEvent(new CustomEvent('profileUpdated', { 
+        detail: { user: updatedUser }
+      }));
+      
+      return updatedUser;
+    } catch (error) {
+      console.error('Profile update error:', error);
+      throw error;
+    }
   }
 };
 

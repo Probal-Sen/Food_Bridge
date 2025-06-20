@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DefaultProfilePic from '../components/DefaultProfilePic';
 import VerificationForm from '../components/VerificationForm';
+import { profileService } from '../services/api';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -81,21 +82,50 @@ const Profile = () => {
             profileImage: base64String
           };
           
-          // Save to localStorage
-          localStorage.setItem('user', JSON.stringify(updatedUser));
-          
-          // Update state
+          // Update state immediately for preview
           setEditedUser(updatedUser);
-          setUser(updatedUser);
-          
-          // Dispatch profile update event
-          const event = new CustomEvent('profileUpdated', { 
-            detail: { user: updatedUser }
-          });
-          window.dispatchEvent(event);
         };
       } catch (err) {
         setError('Failed to upload image. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleRemoveProfilePicture = async () => {
+    console.log('Remove profile picture clicked');
+    if (window.confirm('Are you sure you want to remove your profile picture?')) {
+      try {
+        console.log('User confirmed removal');
+        setLoading(true);
+        setError('');
+        
+        const updatedUser = {
+          ...editedUser,
+          profileImage: null
+        };
+        
+        console.log('Sending update to backend:', updatedUser);
+        
+        // Immediately save to backend
+        const savedUser = await profileService.updateProfile(updatedUser);
+        
+        console.log('Backend response:', savedUser);
+        
+        // Update both states with the saved data
+        setEditedUser(savedUser);
+        setUser(savedUser);
+        
+        // Show success message
+        setSaveSuccess(true);
+        setTimeout(() => {
+          setSaveSuccess(false);
+        }, 2000);
+        
+      } catch (err) {
+        console.error('Remove profile picture error:', err);
+        setError(err.response?.data?.message || 'Failed to remove profile picture. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -107,18 +137,12 @@ const Profile = () => {
       setLoading(true);
       setError('');
       
-      // Here you would typically make an API call to update the user profile
-      // For now, we'll just update local storage
-      localStorage.setItem('user', JSON.stringify(editedUser));
+      // Use the profile service to update the profile
+      const updatedUser = await profileService.updateProfile(editedUser);
       
       // Update the user state
-      setUser(editedUser);
-      
-      // Dispatch a custom event to notify other components
-      const event = new CustomEvent('profileUpdated', { 
-        detail: { user: editedUser }
-      });
-      window.dispatchEvent(event);
+      setUser(updatedUser);
+      setEditedUser(updatedUser);
       
       // Show success message
       setSaveSuccess(true);
@@ -130,7 +154,8 @@ const Profile = () => {
       }, 2000);
       
     } catch (err) {
-      setError('Failed to save changes. Please try again.');
+      console.error('Save error:', err);
+      setError(err.response?.data?.message || 'Failed to save changes. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -194,6 +219,18 @@ const Profile = () => {
                     <small className="text-muted">
                       Click on the image or camera icon to update your profile picture
                     </small>
+                    {editedUser?.profileImage && (
+                      <div className="mt-2">
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger btn-sm"
+                          onClick={handleRemoveProfilePicture}
+                        >
+                          <i className="fas fa-trash me-1"></i>
+                          Remove Picture
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

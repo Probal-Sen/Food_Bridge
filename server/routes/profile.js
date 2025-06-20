@@ -6,9 +6,13 @@ const auth = require('../middleware/auth');
 // Get user profile
 router.get('/', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.userId).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     res.json(user);
   } catch (err) {
+    console.error('Get profile error:', err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -16,28 +20,43 @@ router.get('/', auth, async (req, res) => {
 // Update user profile
 router.patch('/', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    console.log('Profile update request received:', req.body);
+    const user = await User.findById(req.user.userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    // Update basic fields
     if (req.body.name) user.name = req.body.name;
     if (req.body.email) user.email = req.body.email;
     if (req.body.phone) user.phone = req.body.phone;
     if (req.body.address) user.address = req.body.address;
-    if (req.body.profileImage) user.profileImage = req.body.profileImage;
+    if (req.body.city) user.city = req.body.city;
+    if (req.body.zipCode) user.zipCode = req.body.zipCode;
+    if (req.body.profileImage !== undefined) {
+      console.log('Updating profileImage to:', req.body.profileImage);
+      user.profileImage = req.body.profileImage;
+    }
+
+    // Update role-specific fields
+    if (user.role === 'restaurant') {
+      if (req.body.restaurantType) user.restaurantType = req.body.restaurantType;
+      if (req.body.operatingHours) user.operatingHours = req.body.operatingHours;
+    } else if (user.role === 'ngo') {
+      if (req.body.ngoType) user.ngoType = req.body.ngoType;
+      if (req.body.serviceArea) user.serviceArea = req.body.serviceArea;
+      if (req.body.beneficiariesServed) user.beneficiariesServed = req.body.beneficiariesServed;
+    }
 
     const updatedUser = await user.save();
-    res.json({
-      _id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      phone: updatedUser.phone,
-      address: updatedUser.address,
-      profileImage: updatedUser.profileImage,
-      role: updatedUser.role
-    });
+    
+    // Return user data without password
+    const userResponse = updatedUser.toObject();
+    delete userResponse.password;
+    
+    res.json(userResponse);
   } catch (err) {
+    console.error('Profile update error:', err);
     res.status(400).json({ message: err.message });
   }
 });
