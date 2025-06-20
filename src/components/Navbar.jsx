@@ -83,11 +83,12 @@ const Navbar = () => {
     setIsLoggedIn(false);
     setUserType('');
     setUserData(null);
+    // Dispatch logout event
+    window.dispatchEvent(new CustomEvent('userLogout'));
     navigate('/');
   };
 
   const getDashboardLink = () => {
-    if (!isLoggedIn) return '/';
     return userType === 'restaurant' ? '/restaurant/dashboard' : '/ngo/dashboard';
   };
 

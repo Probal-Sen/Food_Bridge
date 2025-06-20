@@ -26,14 +26,10 @@ const Login = () => {
 
     try {
       const response = await authService.login(formData.email, formData.password);
-      const user = response.user;
       
-      // Redirect based on user role
-      if (user.role === 'restaurant') {
-        navigate('/restaurant/dashboard');
-      } else if (user.role === 'ngo') {
-        navigate('/ngo/dashboard');
-      }
+      // Dispatch login event and redirect to home
+      window.dispatchEvent(new CustomEvent('userLogin', { detail: { user: response.user } }));
+      navigate('/', { replace: true });
     } catch (err) {
       if (err.response) {
         setError(err.response.data?.message || 'An error occurred during login');

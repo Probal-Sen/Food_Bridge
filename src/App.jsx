@@ -1,8 +1,9 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import Footer from './components/Footer.jsx';
 import Home from './pages/Home.jsx';
+import AuthenticatedHome from './pages/AuthenticatedHome.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import RestaurantDashboard from './pages/RestaurantDashboard.jsx';
@@ -17,26 +18,109 @@ import NotFound from './pages/NotFound.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+  const navigate = useNavigate();
+
+  const checkAuth = () => {
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    if (token && user) {
+      try {
+        const userData = JSON.parse(user);
+        setIsAuthenticated(true);
+        setUserRole(userData.role);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        setIsAuthenticated(false);
+        setUserRole(null);
+      }
+    } else {
+      setIsAuthenticated(false);
+      setUserRole(null);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+
+    // Handle login event
+    const handleLogin = () => {
+      checkAuth();
+    };
+
+    // Handle logout event
+    const handleLogout = () => {
+      setIsAuthenticated(false);
+      setUserRole(null);
+      navigate('/', { replace: true });
+    };
+
+    // Handle storage changes
+    const handleStorageChange = (e) => {
+      if (e.key === 'token' || e.key === 'user') {
+        checkAuth();
+      }
+    };
+
+    window.addEventListener('userLogin', handleLogin);
+    window.addEventListener('userLogout', handleLogout);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('userLogin', handleLogin);
+      window.removeEventListener('userLogout', handleLogout);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [navigate]);
+
   return (
     <div className="d-flex flex-column min-vh-100">
       <Navbar />
       <main className="flex-grow-1">
         <Routes>
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Home />
+          {/* Public routes */}
+          <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+          <Route path="/register" element={isAuthenticated ? <Navigate to="/" replace /> : <Register />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+
+          {/* Home route with conditional rendering */}
+          <Route path="/" element={isAuthenticated ? <AuthenticatedHome /> : <Home />} />
+
+          {/* Protected routes */}
+          <Route path="/restaurant/dashboard" element={
+            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="restaurant">
+              <RestaurantDashboard />
             </ProtectedRoute>
           } />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/restaurant/dashboard" element={<RestaurantDashboard />} />
-          <Route path="/ngo/dashboard" element={<NGODashboard />} />
-          <Route path="/donation/new" element={<ListDonation />} />
-          <Route path="/donations" element={<ViewDonations />} />
-          <Route path="/donation/:id" element={<DonationDetail />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/ngo/dashboard" element={
+            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="ngo">
+              <NGODashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/donation/new" element={
+            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="restaurant">
+              <ListDonation />
+            </ProtectedRoute>
+          } />
+          <Route path="/donations" element={
+            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="ngo">
+              <ViewDonations />
+            </ProtectedRoute>
+          } />
+          <Route path="/donation/:id" element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <DonationDetail />
+            </ProtectedRoute>
+          } />
+          <Route path="/profile" element={
+            <ProtectedRoute isAuthenticated={isAuthenticated}>
+              <Profile />
+            </ProtectedRoute>
+          } />
+
+          {/* 404 route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
@@ -45,4 +129,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;
