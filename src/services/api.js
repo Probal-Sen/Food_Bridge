@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { BASE_URL } from './helper';
 
-const API_URL = BASE_URL;
+const API_URL = 'http://localhost:5001/api';
 
 // Move the mockDonations array to the top of the file
 const mockDonations = [

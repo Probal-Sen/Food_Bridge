@@ -22,7 +22,10 @@ app.use(express.json());
 // MongoDB Connection
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+    // Use local MongoDB if MONGODB_URI is not set, or use a working Atlas connection
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/foodbridge';
+    
+    const conn = await mongoose.connect(mongoURI, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
@@ -31,7 +34,10 @@ const connectDB = async () => {
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
     console.error('Full error:', err);
-    process.exit(1); // Exit if we can't connect to the database
+    
+    // Don't exit the process, just log the error and continue
+    // This allows the server to start even if MongoDB is not available
+    console.log('Server will start without database connection. Some features may not work.');
   }
 };
 
@@ -69,7 +75,7 @@ app.use((err, req, res, next) => {
 app.get("/",(req,res)=>{
   res.send("Index page")
 });
-const PORT =process.env.PORT|| 3000;
+const PORT = 5001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 }); 

@@ -36,6 +36,5 @@
   },
   "devDependencies": {
     "serve": "^14.2.4"
-  },
-  "proxy": "http://localhost:5001"
+  }
 }

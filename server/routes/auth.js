@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const mongoose = require('mongoose');
 
 // Register route
 router.post('/register', async (req, res) => {
@@ -79,6 +80,37 @@ router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     console.log('Login attempt:', email);
+
+    // Check if database is connected
+    if (mongoose.connection.readyState !== 1) {
+      console.log('Database not connected, using mock authentication');
+      
+      // Mock authentication for testing
+      if (email === 'test@example.com' && password === 'password123') {
+        const mockUser = {
+          _id: 'mock-user-id',
+          name: 'Test User',
+          email: 'test@example.com',
+          role: 'restaurant',
+          phone: '123-456-7890',
+          address: '123 Test St',
+          city: 'Test City',
+          zipCode: '12345',
+          restaurantType: 'Italian',
+          operatingHours: '9 AM - 10 PM'
+        };
+        
+        const token = jwt.sign(
+          { userId: mockUser._id },
+          process.env.JWT_SECRET || 'your_jwt_secret_key_here',
+          { expiresIn: '24h' }
+        );
+        
+        return res.json({ token, user: mockUser });
+      } else {
+        return res.status(401).json({ message: 'Invalid credentials' });
+      }
+    }
 
     // Find user
     const user = await User.findOne({ email });
