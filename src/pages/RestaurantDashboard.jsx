@@ -1,54 +1,77 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { donationService } from '../services/api';
 
 const RestaurantDashboard = () => {
-  // Mock data - in a real app, this would come from an API
-  const [stats] = useState({
-    totalDonations: 24,
-    pendingPickups: 2,
-    totalMealsSaved: 350,
-    totalKgSaved: 175,
-    co2Reduction: 612, // in kg
+  const location = useLocation();
+  const [stats, setStats] = useState({
+    totalDonations: 0,
+    pendingPickups: 0,
+    totalMealsSaved: 0,
+    totalKgSaved: 0,
+    co2Reduction: 0,
   });
 
-  const [recentDonations] = useState([
-    {
-      id: 1,
-      foodItems: 'Mixed vegetables, Pasta, Bread',
-      quantity: '5 kg',
-      pickupTime: '2023-06-15 18:00',
-      ngoName: 'Food For All',
-      status: 'Picked up',
-      peopleHelped: 15
-    },
-    {
-      id: 2,
-      foodItems: 'Rice, Curry, Salad',
-      quantity: '7 kg',
-      pickupTime: '2023-06-14 19:30',
-      ngoName: 'Helping Hands',
-      status: 'Picked up',
-      peopleHelped: 20
-    },
-    {
-      id: 3,
-      foodItems: 'Sandwiches, Pastries, Fruit',
-      quantity: '3 kg',
-      pickupTime: '2023-06-18 16:00',
-      ngoName: 'Community Shelter',
-      status: 'Scheduled',
-      peopleHelped: null
-    },
-    {
-      id: 4,
-      foodItems: 'Soup, Bread, Desserts',
-      quantity: '4 kg',
-      pickupTime: '2023-06-19 17:30',
-      ngoName: 'Pending',
-      status: 'Available',
-      peopleHelped: null
+  const [recentDonations, setRecentDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load donations and calculate stats
+  const loadDonations = async () => {
+    try {
+      const allDonations = await donationService.getAllDonations();
+      const userDonations = allDonations.filter(donation => {
+        const user = JSON.parse(localStorage.getItem('user'));
+        return donation.restaurant === user.id;
+      });
+
+      setRecentDonations(userDonations.map(donation => ({
+        id: donation.id,
+        foodItems: donation.foodItems,
+        quantity: `${donation.quantity} ${donation.quantityUnit}`,
+        pickupTime: `${donation.pickupDate} ${donation.pickupStartTime}`,
+        ngoName: donation.ngoAssigned || 'Pending',
+        status: donation.status || 'Available',
+        peopleHelped: donation.estimatedMeals ? parseInt(donation.estimatedMeals) : null
+      })));
+
+      // Calculate stats
+      setStats({
+        totalDonations: userDonations.length,
+        pendingPickups: userDonations.filter(d => d.status === 'Available').length,
+        totalMealsSaved: userDonations.reduce((acc, curr) => acc + (parseInt(curr.estimatedMeals) || 0), 0),
+        totalKgSaved: userDonations.reduce((acc, curr) => {
+          if (curr.quantityUnit === 'kg') {
+            return acc + (parseFloat(curr.quantity) || 0);
+          }
+          return acc;
+        }, 0),
+        co2Reduction: userDonations.reduce((acc, curr) => {
+          if (curr.quantityUnit === 'kg') {
+            // Rough estimate: 1 kg of food waste = 3.5 kg of CO2
+            return acc + ((parseFloat(curr.quantity) || 0) * 3.5);
+          }
+          return acc;
+        }, 0),
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error loading donations:', error);
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    loadDonations();
+  }, []);
+
+  // Show success message if redirected from donation creation
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      // You could add a toast notification here
+      loadDonations(); // Reload donations when redirected from successful creation
+    }
+  }, [location.state]);
 
   const [notifications, setNotifications] = useState([
     {
@@ -93,12 +116,33 @@ const RestaurantDashboard = () => {
 
   const unreadNotificationsCount = notifications.filter(n => !n.read).length;
 
+  if (loading) {
+    return (
+      <div className="container py-5">
+        <div className="text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="mt-3">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-5">
+      {location.state?.successMessage && (
+        <div className="alert alert-success alert-dismissible fade show mb-4" role="alert">
+          <i className="fas fa-check-circle me-2"></i>
+          {location.state.successMessage}
+          <button type="button" className="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      )}
+
       <div className="row mb-4">
         <div className="col-md-8">
           <h2 className="fw-bold">Restaurant Dashboard</h2>
-          <p className="text-muted">Welcome back, Restaurant Name!</p>
+          <p className="text-muted">Welcome back, {JSON.parse(localStorage.getItem('user'))?.name || 'Restaurant'}!</p>
         </div>
         <div className="col-md-4 text-md-end">
           <Link to="/donation/new" className="btn btn-primary">

@@ -90,32 +90,32 @@ function App() {
 
           {/* Protected routes */}
           <Route path="/restaurant/dashboard" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="restaurant">
+            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="restaurant" userRole={userRole}>
               <RestaurantDashboard />
             </ProtectedRoute>
           } />
           <Route path="/ngo/dashboard" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="ngo">
+            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="ngo" userRole={userRole}>
               <NGODashboard />
             </ProtectedRoute>
           } />
           <Route path="/donation/new" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="restaurant">
+            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="restaurant" userRole={userRole}>
               <ListDonation />
             </ProtectedRoute>
           } />
           <Route path="/donations" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="ngo">
+            <ProtectedRoute isAuthenticated={isAuthenticated} requiredRole="ngo" userRole={userRole}>
               <ViewDonations />
             </ProtectedRoute>
           } />
           <Route path="/donation/:id" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <ProtectedRoute isAuthenticated={isAuthenticated} userRole={userRole}>
               <DonationDetail />
             </ProtectedRoute>
           } />
           <Route path="/profile" element={
-            <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <ProtectedRoute isAuthenticated={isAuthenticated} userRole={userRole}>
               <Profile />
             </ProtectedRoute>
           } />

@@ -6,20 +6,40 @@ const API_URL = 'http://localhost:5001/api';
 const mockDonations = [
   {
     id: 1,
-    donor: { name: "John Doe", id: 1 },
-    items: "Clothing, Books",
-    status: "pending",
-    pickupDate: "2023-10-26",
-    notes: "Fragile items",
+    restaurant: 1,
+    restaurantName: "Sana Biryani",
+    foodItems: "Chicken Biryani (10 portions), Egg Biryani (5 portions)",
+    foodType: "Non-Vegetarian Cooked Meals",
+    quantity: "15",
+    quantityUnit: "meals",
+    estimatedMeals: "15",
+    status: "Available",
+    pickupDate: "2024-01-20",
+    pickupStartTime: "15:00",
+    pickupEndTime: "17:00",
+    ngoAssigned: null,
+    dietaryInfo: "Non-vegetarian",
+    allergenInfo: "Contains eggs, dairy",
+    additionalInfo: "Refrigeration required"
   },
   {
     id: 2,
-    donor: { name: "Jane Smith", id: 2 },
-    items: "Canned Goods",
-    status: "completed",
-    pickupDate: "2023-10-20",
-    notes: "Non-perishable",
-  },
+    restaurant: 1,
+    restaurantName: "Sana Biryani",
+    foodItems: "Mixed Vegetable Curry (8 portions), Dal (10 portions)",
+    foodType: "Vegetarian Cooked Meals",
+    quantity: "18",
+    quantityUnit: "meals",
+    estimatedMeals: "18",
+    status: "Scheduled",
+    pickupDate: "2024-01-20",
+    pickupStartTime: "16:00",
+    pickupEndTime: "18:00",
+    ngoAssigned: "Food For All",
+    dietaryInfo: "Vegetarian",
+    allergenInfo: "Contains dairy",
+    additionalInfo: "Includes rice and bread"
+  }
 ];
 
 // Create axios instance with default config
