@@ -14,7 +14,10 @@ const Register = () => {
     address: '',
     city: '',
     zipCode: '',
-    role: 'restaurant'
+    role: 'restaurant',
+    verificationNumber: '',
+    verificationExpiry: '',
+    verificationDocument: null
   });
   
   const [errors, setErrors] = useState({});
@@ -31,11 +34,18 @@ const Register = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    const { name, value, type, files } = e.target;
+    if (type === 'file') {
+      setFormData(prev => ({
+        ...prev,
+        [name]: files[0]
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const validateStep2 = () => {
@@ -70,6 +80,28 @@ const Register = () => {
     } else if (userType === 'ngo') {
       if (!formData.ngoType) newErrors.ngoType = "Organization type is required";
       if (!formData.serviceArea) newErrors.serviceArea = "Service area is required";
+      if (!formData.beneficiariesServed) newErrors.beneficiariesServed = "Number of beneficiaries is required";
+    }
+
+    // Validation for verification fields
+    if (!formData.verificationNumber) {
+      newErrors.verificationNumber = userType === 'restaurant' 
+        ? "FSSAI License Number is required" 
+        : "NGO Registration Number is required";
+    }
+    if (!formData.verificationExpiry) {
+      newErrors.verificationExpiry = "Document expiry date is required";
+    }
+    if (!formData.verificationDocument) {
+      newErrors.verificationDocument = "Verification document is required";
+    } else {
+      const file = formData.verificationDocument;
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        newErrors.verificationDocument = "File size should be less than 5MB";
+      }
+      if (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) {
+        newErrors.verificationDocument = "Only PDF and image files are allowed";
+      }
     }
     
     setErrors(newErrors);
@@ -98,11 +130,27 @@ const Register = () => {
     if (!validateStep3()) return;
     setLoading(true);
     try {
-      const { confirmPassword, ...registrationData } = formData;
+      const { confirmPassword, verificationDocument, ...registrationData } = formData;
       console.log('Sending registration data:', registrationData);
       
       const response = await authService.register(registrationData);
       console.log('Registration response:', response);
+
+      // After successful registration, upload verification document
+      if (response.token) {
+        const formData = new FormData();
+        formData.append('verificationDocument', verificationDocument);
+        formData.append('verificationNumber', registrationData.verificationNumber);
+        formData.append('verificationExpiry', registrationData.verificationExpiry);
+
+        await fetch(`${process.env.REACT_APP_API_URL}/api/verification/submit`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${response.token}`
+          },
+          body: formData
+        });
+      }
       
       const user = response.user;
       if (user.role === 'restaurant') {
@@ -198,59 +246,65 @@ const Register = () => {
                       type="text" 
                       className={`form-control ${errors.name ? 'is-invalid' : ''}`}
                       id="name" 
-                      name="name" 
-                      value={formData.name} 
-                      onChange={handleChange} 
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
                     />
                     {errors.name && <div className="invalid-feedback">{errors.name}</div>}
                   </div>
-                  
+
                   <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email Address</label>
+                    <label htmlFor="email" className="form-label">Email</label>
                     <input 
                       type="email" 
                       className={`form-control ${errors.email ? 'is-invalid' : ''}`}
                       id="email" 
-                      name="email" 
-                      value={formData.email} 
-                      onChange={handleChange} 
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
                     />
                     {errors.email && <div className="invalid-feedback">{errors.email}</div>}
                   </div>
-                  
-                  <div className="row">
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="password" className="form-label">Password</label>
-                      <input 
-                        type="password" 
-                        className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                        id="password" 
-                        name="password" 
-                        value={formData.password} 
-                        onChange={handleChange} 
-                      />
-                      {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-                    </div>
-                    
-                    <div className="col-md-6 mb-3">
-                      <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-                      <input 
-                        type="password" 
-                        className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
-                        id="confirmPassword" 
-                        name="confirmPassword" 
-                        value={formData.confirmPassword} 
-                        onChange={handleChange} 
-                      />
-                      {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
-                    </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="password" className="form-label">Password</label>
+                    <input 
+                      type="password" 
+                      className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                      id="password" 
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                    />
+                    {errors.password && <div className="invalid-feedback">{errors.password}</div>}
                   </div>
-                  
+
+                  <div className="mb-3">
+                    <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                    <input 
+                      type="password" 
+                      className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
+                      id="confirmPassword" 
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                    />
+                    {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
+                  </div>
+
                   <div className="d-flex justify-content-between mt-4">
-                    <button type="button" className="btn btn-outline-secondary" onClick={handleBack}>
+                    <button 
+                      type="button" 
+                      className="btn btn-secondary"
+                      onClick={handleBack}
+                    >
                       Back
                     </button>
-                    <button type="button" className="btn btn-primary" onClick={handleNext}>
+                    <button 
+                      type="button" 
+                      className="btn btn-primary"
+                      onClick={handleNext}
+                    >
                       Next
                     </button>
                   </div>
@@ -263,7 +317,7 @@ const Register = () => {
     );
   }
 
-  // Step 3: Additional Information
+  // Step 3: Additional Information and Verification
   return (
     <div className="container py-5">
       <div className="row justify-content-center">
@@ -281,160 +335,195 @@ const Register = () => {
                   {errors.form}
                 </div>
               )}
+
               <form onSubmit={handleSubmit}>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label htmlFor="phone" className="form-label">Phone Number</label>
-                    <input 
-                      type="text" 
-                      className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
-                      id="phone" 
-                      name="phone" 
-                      value={formData.phone} 
-                      onChange={handleChange} 
-                    />
-                    {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
-                  </div>
-                  
-                  <div className="col-md-6 mb-3">
-                    <label htmlFor="zipCode" className="form-label">ZIP Code</label>
-                    <input 
-                      type="text" 
-                      className={`form-control ${errors.zipCode ? 'is-invalid' : ''}`}
-                      id="zipCode" 
-                      name="zipCode" 
-                      value={formData.zipCode} 
-                      onChange={handleChange} 
-                    />
-                    {errors.zipCode && <div className="invalid-feedback">{errors.zipCode}</div>}
-                  </div>
+                <div className="mb-3">
+                  <label htmlFor="phone" className="form-label">Phone Number</label>
+                  <input 
+                    type="tel" 
+                    className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
+                    id="phone" 
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                  />
+                  {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
                 </div>
-                
+
                 <div className="mb-3">
                   <label htmlFor="address" className="form-label">Address</label>
                   <input 
                     type="text" 
                     className={`form-control ${errors.address ? 'is-invalid' : ''}`}
                     id="address" 
-                    name="address" 
-                    value={formData.address} 
-                    onChange={handleChange} 
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
                   />
                   {errors.address && <div className="invalid-feedback">{errors.address}</div>}
                 </div>
-                
-                <div className="mb-3">
-                  <label htmlFor="city" className="form-label">City</label>
-                  <input 
-                    type="text" 
-                    className={`form-control ${errors.city ? 'is-invalid' : ''}`}
-                    id="city" 
-                    name="city" 
-                    value={formData.city} 
-                    onChange={handleChange} 
-                  />
-                  {errors.city && <div className="invalid-feedback">{errors.city}</div>}
+
+                <div className="row mb-3">
+                  <div className="col-md-6">
+                    <label htmlFor="city" className="form-label">City</label>
+                    <input 
+                      type="text" 
+                      className={`form-control ${errors.city ? 'is-invalid' : ''}`}
+                      id="city" 
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                    />
+                    {errors.city && <div className="invalid-feedback">{errors.city}</div>}
+                  </div>
+                  <div className="col-md-6">
+                    <label htmlFor="zipCode" className="form-label">ZIP Code</label>
+                    <input 
+                      type="text" 
+                      className={`form-control ${errors.zipCode ? 'is-invalid' : ''}`}
+                      id="zipCode" 
+                      name="zipCode"
+                      value={formData.zipCode}
+                      onChange={handleChange}
+                    />
+                    {errors.zipCode && <div className="invalid-feedback">{errors.zipCode}</div>}
+                  </div>
                 </div>
-                
+
                 {userType === 'restaurant' && (
-                  <>
-                    <div className="mb-3">
+                  <div className="row mb-3">
+                    <div className="col-md-6">
                       <label htmlFor="restaurantType" className="form-label">Restaurant Type</label>
-                      <select 
-                        className={`form-select ${errors.restaurantType ? 'is-invalid' : ''}`}
+                      <input 
+                        type="text" 
+                        className={`form-control ${errors.restaurantType ? 'is-invalid' : ''}`}
                         id="restaurantType" 
-                        name="restaurantType" 
-                        value={formData.restaurantType} 
+                        name="restaurantType"
+                        value={formData.restaurantType}
                         onChange={handleChange}
-                      >
-                        <option value="">-- Select Restaurant Type --</option>
-                        <option value="fastFood">Fast Food</option>
-                        <option value="casual">Casual Dining</option>
-                        <option value="fineDining">Fine Dining</option>
-                        <option value="cafe">Café</option>
-                        <option value="buffet">Buffet</option>
-                        <option value="other">Other</option>
-                      </select>
+                      />
                       {errors.restaurantType && <div className="invalid-feedback">{errors.restaurantType}</div>}
                     </div>
-                    
-                    <div className="mb-3">
+                    <div className="col-md-6">
                       <label htmlFor="operatingHours" className="form-label">Operating Hours</label>
                       <input 
                         type="text" 
                         className={`form-control ${errors.operatingHours ? 'is-invalid' : ''}`}
                         id="operatingHours" 
                         name="operatingHours"
-                        placeholder="e.g. Mon-Fri: 9AM-9PM, Sat-Sun: 10AM-11PM" 
-                        value={formData.operatingHours} 
-                        onChange={handleChange} 
+                        value={formData.operatingHours}
+                        onChange={handleChange}
                       />
                       {errors.operatingHours && <div className="invalid-feedback">{errors.operatingHours}</div>}
                     </div>
-                  </>
+                  </div>
                 )}
-                
+
                 {userType === 'ngo' && (
                   <>
-                    <div className="mb-3">
-                      <label htmlFor="ngoType" className="form-label">Organization Type</label>
-                      <select 
-                        className={`form-select ${errors.ngoType ? 'is-invalid' : ''}`}
-                        id="ngoType" 
-                        name="ngoType" 
-                        value={formData.ngoType} 
-                        onChange={handleChange}
-                      >
-                        <option value="">-- Select Organization Type --</option>
-                        <option value="foodBank">Food Bank</option>
-                        <option value="shelter">Shelter</option>
-                        <option value="communityKitchen">Community Kitchen</option>
-                        <option value="religiousOrg">Religious Organization</option>
-                        <option value="other">Other</option>
-                      </select>
-                      {errors.ngoType && <div className="invalid-feedback">{errors.ngoType}</div>}
+                    <div className="row mb-3">
+                      <div className="col-md-6">
+                        <label htmlFor="ngoType" className="form-label">Organization Type</label>
+                        <input 
+                          type="text" 
+                          className={`form-control ${errors.ngoType ? 'is-invalid' : ''}`}
+                          id="ngoType" 
+                          name="ngoType"
+                          value={formData.ngoType}
+                          onChange={handleChange}
+                        />
+                        {errors.ngoType && <div className="invalid-feedback">{errors.ngoType}</div>}
+                      </div>
+                      <div className="col-md-6">
+                        <label htmlFor="serviceArea" className="form-label">Service Area</label>
+                        <input 
+                          type="text" 
+                          className={`form-control ${errors.serviceArea ? 'is-invalid' : ''}`}
+                          id="serviceArea" 
+                          name="serviceArea"
+                          value={formData.serviceArea}
+                          onChange={handleChange}
+                        />
+                        {errors.serviceArea && <div className="invalid-feedback">{errors.serviceArea}</div>}
+                      </div>
                     </div>
-                    
                     <div className="mb-3">
-                      <label htmlFor="serviceArea" className="form-label">Service Area (km radius)</label>
-                      <select 
-                        className={`form-select ${errors.serviceArea ? 'is-invalid' : ''}`}
-                        id="serviceArea" 
-                        name="serviceArea" 
-                        value={formData.serviceArea} 
-                        onChange={handleChange}
-                      >
-                        <option value="">-- Select Service Area --</option>
-                        <option value="5">Up to 5 km</option>
-                        <option value="10">Up to 10 km</option>
-                        <option value="15">Up to 15 km</option>
-                        <option value="20">Up to 20 km</option>
-                        <option value="25">Up to 25 km</option>
-                      </select>
-                      {errors.serviceArea && <div className="invalid-feedback">{errors.serviceArea}</div>}
-                    </div>
-                    
-                    <div className="mb-3">
-                      <label htmlFor="beneficiariesServed" className="form-label">Number of Beneficiaries Served (Daily)</label>
+                      <label htmlFor="beneficiariesServed" className="form-label">Number of Beneficiaries</label>
                       <input 
                         type="number" 
-                        className="form-control"
+                        className={`form-control ${errors.beneficiariesServed ? 'is-invalid' : ''}`}
                         id="beneficiariesServed" 
-                        name="beneficiariesServed" 
-                        value={formData.beneficiariesServed} 
-                        onChange={handleChange} 
+                        name="beneficiariesServed"
+                        value={formData.beneficiariesServed}
+                        onChange={handleChange}
                       />
+                      {errors.beneficiariesServed && <div className="invalid-feedback">{errors.beneficiariesServed}</div>}
                     </div>
                   </>
                 )}
-                
+
+                {/* Verification Fields */}
+                <div className="border-top pt-4 mt-4">
+                  <h5 className="mb-3">Verification Details</h5>
+                  
+                  <div className="mb-3">
+                    <label htmlFor="verificationNumber" className="form-label">
+                      {userType === 'restaurant' ? 'FSSAI License Number' : 'NGO Registration Number'}
+                    </label>
+                    <input 
+                      type="text" 
+                      className={`form-control ${errors.verificationNumber ? 'is-invalid' : ''}`}
+                      id="verificationNumber" 
+                      name="verificationNumber"
+                      value={formData.verificationNumber}
+                      onChange={handleChange}
+                    />
+                    {errors.verificationNumber && <div className="invalid-feedback">{errors.verificationNumber}</div>}
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="verificationExpiry" className="form-label">Document Expiry Date</label>
+                    <input 
+                      type="date" 
+                      className={`form-control ${errors.verificationExpiry ? 'is-invalid' : ''}`}
+                      id="verificationExpiry" 
+                      name="verificationExpiry"
+                      value={formData.verificationExpiry}
+                      onChange={handleChange}
+                    />
+                    {errors.verificationExpiry && <div className="invalid-feedback">{errors.verificationExpiry}</div>}
+                  </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="verificationDocument" className="form-label">
+                      Upload {userType === 'restaurant' ? 'FSSAI License' : 'NGO Registration Certificate'}
+                    </label>
+                    <input 
+                      type="file" 
+                      className={`form-control ${errors.verificationDocument ? 'is-invalid' : ''}`}
+                      id="verificationDocument" 
+                      name="verificationDocument"
+                      accept=".pdf,image/*"
+                      onChange={handleChange}
+                    />
+                    <div className="form-text">
+                      Maximum file size: 5MB. Accepted formats: PDF, JPG, PNG
+                    </div>
+                    {errors.verificationDocument && <div className="invalid-feedback">{errors.verificationDocument}</div>}
+                  </div>
+                </div>
+
                 <div className="d-flex justify-content-between mt-4">
-                  <button type="button" className="btn btn-outline-secondary" onClick={handleBack}>
+                  <button 
+                    type="button" 
+                    className="btn btn-secondary"
+                    onClick={handleBack}
+                  >
                     Back
                   </button>
                   <button 
                     type="submit" 
-                    className="btn btn-primary" 
+                    className="btn btn-primary"
                     disabled={loading}
                   >
                     {loading ? (
@@ -442,7 +531,9 @@ const Register = () => {
                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                         Registering...
                       </>
-                    ) : 'Register'}
+                    ) : (
+                      'Complete Registration'
+                    )}
                   </button>
                 </div>
               </form>

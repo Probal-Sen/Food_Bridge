@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DefaultProfilePic from '../components/DefaultProfilePic';
+import VerificationForm from '../components/VerificationForm';
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState('profile');
@@ -198,80 +199,62 @@ const Profile = () => {
               </div>
               
               <h5 className="fw-bold">{editedUser?.name}</h5>
-              <p className="text-muted mb-0">{editedUser?.organizationName}</p>
-              <p className="badge bg-primary mt-2">{editedUser?.role === 'restaurant' ? 'Restaurant' : 'NGO'}</p>
+              <p className="text-muted mb-2">{editedUser?.role === 'restaurant' ? 'Restaurant' : 'NGO'}</p>
               
-              <div className="border-top mt-3 pt-3">
-                <p className="small text-muted mb-0">Member since</p>
-                <p>{editedUser?.registeredDate || new Date().toLocaleDateString()}</p>
+              <div className="d-flex justify-content-center mt-3">
+                {!isEditing ? (
+                  <button 
+                    className="btn btn-primary"
+                    onClick={handleEditToggle}
+                  >
+                    Edit Profile
+                  </button>
+                ) : (
+                  <div className="d-flex gap-2">
+                    <button 
+                      className="btn btn-secondary"
+                      onClick={handleEditToggle}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="btn btn-primary"
+                      onClick={handleSave}
+                      disabled={loading}
+                    >
+                      {loading ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                )}
               </div>
-            </div>
-            
-            <div className="list-group list-group-flush">
-              <button 
-                className={`list-group-item list-group-item-action d-flex align-items-center ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveTab('profile')}
-              >
-                <i className="fas fa-user me-3"></i> Profile Information
-              </button>
-              <button 
-                className={`list-group-item list-group-item-action d-flex align-items-center ${activeTab === 'security' ? 'active' : ''}`}
-                onClick={() => setActiveTab('security')}
-              >
-                <i className="fas fa-lock me-3"></i> Security Settings
-              </button>
-              {editedUser?.role === 'restaurant' ? (
-                <button 
-                  className={`list-group-item list-group-item-action d-flex align-items-center ${activeTab === 'donations' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('donations')}
-                >
-                  <i className="fas fa-gift me-3"></i> Donation History
-                </button>
-              ) : (
-                <button 
-                  className={`list-group-item list-group-item-action d-flex align-items-center ${activeTab === 'pickups' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('pickups')}
-                >
-                  <i className="fas fa-truck me-3"></i> Pickup History
-                </button>
-              )}
             </div>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="col-lg-9">
-          <div className="card border-0 shadow">
-            <div className="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-              <h5 className="mb-0 fw-bold">
-                {activeTab === 'profile' && 'Profile Information'}
-                {activeTab === 'security' && 'Security Settings'}
-                {activeTab === 'donations' && 'Donation History'}
-                {activeTab === 'pickups' && 'Pickup History'}
-              </h5>
-              {activeTab === 'profile' && (
-                <div>
-                  {saveSuccess && (
-                    <span className="text-success me-3">
-                      <i className="fas fa-check-circle me-1"></i>
-                      Changes saved successfully!
-                    </span>
-                  )}
-                  <button 
-                    className={`btn ${isEditing ? 'btn-success' : 'btn-primary'}`}
-                    onClick={isEditing ? handleSave : handleEditToggle}
-                    disabled={loading}
+          <div className="card border-0 shadow mb-4">
+            <div className="card-header bg-white border-0">
+              <ul className="nav nav-tabs card-header-tabs">
+                <li className="nav-item">
+                  <button
+                    className={`nav-link ${activeTab === 'profile' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('profile')}
                   >
-                    {loading ? (
-                      <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                    ) : (
-                      <i className={`fas ${isEditing ? 'fa-save' : 'fa-edit'} me-2`}></i>
-                    )}
-                    {isEditing ? 'Save Changes' : 'Edit Profile'}
+                    Profile Details
                   </button>
-                </div>
-              )}
+                </li>
+                <li className="nav-item">
+                  <button
+                    className={`nav-link ${activeTab === 'verification' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('verification')}
+                  >
+                    Verification
+                  </button>
+                </li>
+              </ul>
             </div>
+
             <div className="card-body">
               {error && (
                 <div className="alert alert-danger" role="alert">
@@ -279,82 +262,169 @@ const Profile = () => {
                 </div>
               )}
               
-              <form>
-                <div className="row mb-3">
-                  <div className="col-md-6">
-                    <label className="form-label">Full Name</label>
+              {saveSuccess && (
+                <div className="alert alert-success" role="alert">
+                  Profile updated successfully!
+                </div>
+              )}
+
+              {activeTab === 'profile' ? (
+                <form>
+                  <div className="row mb-3">
+                    <div className="col-md-6">
+                      <label className="form-label">Name</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="name"
+                        value={editedUser?.name || ''}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Email</label>
+                      <input
+                        type="email"
+                        className="form-control"
+                        value={editedUser?.email || ''}
+                        disabled
+                      />
+                    </div>
+                  </div>
+
+                  <div className="row mb-3">
+                    <div className="col-md-6">
+                      <label className="form-label">Phone</label>
+                      <input
+                        type="tel"
+                        className="form-control"
+                        name="phone"
+                        value={editedUser?.phone || ''}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">Role</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={editedUser?.role === 'restaurant' ? 'Restaurant' : 'NGO'}
+                        disabled
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label">Address</label>
                     <input
                       type="text"
                       className="form-control"
-                      name="name"
-                      value={editedUser?.name || ''}
+                      name="address"
+                      value={editedUser?.address || ''}
                       onChange={handleInputChange}
                       disabled={!isEditing}
                     />
                   </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Organization Name</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      name="organizationName"
-                      value={editedUser?.organizationName || ''}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                </div>
 
-                <div className="row mb-3">
-                  <div className="col-md-6">
-                    <label className="form-label">Email</label>
-                    <input
-                      type="email"
-                      className="form-control"
-                      name="email"
-                      value={editedUser?.email || ''}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                    />
+                  <div className="row mb-3">
+                    <div className="col-md-6">
+                      <label className="form-label">City</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="city"
+                        value={editedUser?.city || ''}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="col-md-6">
+                      <label className="form-label">ZIP Code</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        name="zipCode"
+                        value={editedUser?.zipCode || ''}
+                        onChange={handleInputChange}
+                        disabled={!isEditing}
+                      />
+                    </div>
                   </div>
-                  <div className="col-md-6">
-                    <label className="form-label">Phone Number</label>
-                    <input
-                      type="tel"
-                      className="form-control"
-                      name="phone"
-                      value={editedUser?.phone || ''}
-                      onChange={handleInputChange}
-                      disabled={!isEditing}
-                    />
-                  </div>
-                </div>
 
-                <div className="mb-3">
-                  <label className="form-label">Address</label>
-                  <textarea
-                    className="form-control"
-                    name="address"
-                    rows="3"
-                    value={editedUser?.address || ''}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                  ></textarea>
-                </div>
+                  {editedUser?.role === 'restaurant' && (
+                    <>
+                      <div className="row mb-3">
+                        <div className="col-md-6">
+                          <label className="form-label">Restaurant Type</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="restaurantType"
+                            value={editedUser?.restaurantType || ''}
+                            onChange={handleInputChange}
+                            disabled={!isEditing}
+                          />
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label">Operating Hours</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="operatingHours"
+                            value={editedUser?.operatingHours || ''}
+                            onChange={handleInputChange}
+                            disabled={!isEditing}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
 
-                <div className="mb-3">
-                  <label className="form-label">Bio</label>
-                  <textarea
-                    className="form-control"
-                    name="bio"
-                    rows="4"
-                    value={editedUser?.bio || ''}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    placeholder="Tell us about your organization..."
-                  ></textarea>
-                </div>
-              </form>
+                  {editedUser?.role === 'ngo' && (
+                    <>
+                      <div className="row mb-3">
+                        <div className="col-md-6">
+                          <label className="form-label">NGO Type</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="ngoType"
+                            value={editedUser?.ngoType || ''}
+                            onChange={handleInputChange}
+                            disabled={!isEditing}
+                          />
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label">Service Area</label>
+                          <input
+                            type="text"
+                            className="form-control"
+                            name="serviceArea"
+                            value={editedUser?.serviceArea || ''}
+                            onChange={handleInputChange}
+                            disabled={!isEditing}
+                          />
+                        </div>
+                      </div>
+                      <div className="mb-3">
+                        <label className="form-label">Beneficiaries Served</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="beneficiariesServed"
+                          value={editedUser?.beneficiariesServed || ''}
+                          onChange={handleInputChange}
+                          disabled={!isEditing}
+                        />
+                      </div>
+                    </>
+                  )}
+                </form>
+              ) : (
+                <VerificationForm user={user} />
+              )}
             </div>
           </div>
         </div>
