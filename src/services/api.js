@@ -217,4 +217,33 @@ export const contactService = {
   }
 };
 
+// Verification services
+export const verificationService = {
+  submitVerification: async (formData) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/verification/submit`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Verification submission error:', error);
+      throw error;
+    }
+  },
+
+  getVerificationStatus: async () => {
+    try {
+      const response = await api.get('/verification/status');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching verification status:', error);
+      throw error;
+    }
+  }
+};
+
 export default api; 

@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -18,6 +19,9 @@ app.use(cors({
 
 // Middleware
 app.use(express.json());
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB Connection
 const connectDB = async () => {
@@ -49,6 +53,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/donations', require('./routes/donations'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/profile', require('./routes/profile'));
+app.use('/api/verification', require('./routes/verification'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -63,6 +68,12 @@ app.use((err, req, res, next) => {
   if (err.name === 'MongoError' && err.code === 11000) {
     return res.status(400).json({
       message: 'A user with this email already exists'
+    });
+  }
+
+  if (err.name === 'MulterError') {
+    return res.status(400).json({
+      message: err.message
     });
   }
   

@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "build":"npm install"
+    "build": "npm install"
   },
   "keywords": [
     "foodbridge",
@@ -22,7 +22,8 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "mongoose": "^7.8.7"
+    "mongoose": "^7.8.7",
+    "multer": "^2.0.0-rc.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

@@ -44,6 +44,32 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  // Verification fields
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  verificationStatus: {
+    type: String,
+    enum: ['pending', 'verified', 'rejected'],
+    default: 'pending'
+  },
+  verificationDocument: {
+    type: String,  // URL/path to the uploaded document
+    required: true
+  },
+  verificationNumber: {
+    type: String,  // FSSAI number for restaurants, Registration number for NGOs
+    required: true
+  },
+  verificationExpiry: {
+    type: Date,
+    required: true
+  },
+  verificationRejectionReason: {
+    type: String,
+    default: null
+  },
   // Restaurant specific fields
   restaurantType: {
     type: String,
