@@ -119,12 +119,16 @@ const ListDonation = () => {
 
   // Food type options
   const foodTypes = [
-    { value: 'cooked', label: 'Cooked Food' },
-    { value: 'fresh', label: 'Fresh Produce' },
+    { value: 'non-veg-cooked', label: 'Non-Vegetarian Cooked Meals' },
+    { value: 'veg-cooked', label: 'Vegetarian Cooked Meals' },
+    { value: 'grilled-tandoori', label: 'Grilled / Tandoori' },
+    { value: 'fried-steamed', label: 'Fried / Steamed' },
     { value: 'bakery', label: 'Bakery Items' },
+    { value: 'fresh-produce', label: 'Fresh Produce' },
     { value: 'dairy', label: 'Dairy Products' },
-    { value: 'canned', label: 'Canned/Packaged Food' },
-    { value: 'mixed', label: 'Mixed/Assorted Items' }
+    { value: 'packaged-dry', label: 'Packaged / Dry Foods' },
+    { value: 'beverages', label: 'Beverages' },
+    { value: 'mixed', label: 'Mixed Items' }
   ];
 
   // Dietary info options

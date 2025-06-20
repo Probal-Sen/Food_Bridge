@@ -7,12 +7,42 @@ const ViewDonations = () => {
   const [donations, setDonations] = useState([]);
   const [filteredDonations, setFilteredDonations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errors] = useState({});
   const [filters, setFilters] = useState({
     foodType: '',
     distance: '',
     expiryTime: '',
   });
   const [sortBy, setSortBy] = useState('expiry');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Function to get badge color based on food type
+  const getFoodTypeBadgeColor = (foodType) => {
+    switch (foodType) {
+      case 'Non-Vegetarian Cooked Meals':
+        return 'danger';
+      case 'Vegetarian Cooked Meals':
+        return 'success';
+      case 'Grilled / Tandoori':
+        return 'warning';
+      case 'Fried / Steamed':
+        return 'info';
+      case 'Bakery Items':
+        return 'primary';
+      case 'Fresh Produce':
+        return 'success';
+      case 'Dairy Products':
+        return 'light';
+      case 'Packaged / Dry Foods':
+        return 'secondary';
+      case 'Beverages':
+        return 'info';
+      case 'Mixed Items':
+        return 'dark';
+      default:
+        return 'secondary';
+    }
+  };
 
   // Mock data - in a real app, this would be fetched from an API
   useEffect(() => {
@@ -25,6 +55,15 @@ const ViewDonations = () => {
   // Apply filters and sorting
   useEffect(() => {
     let result = [...donations];
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(donation => 
+        donation.restaurantName.toLowerCase().includes(query) ||
+        donation.foodItems.toLowerCase().includes(query)
+      );
+    }
     
     // Apply filters
     if (filters.foodType) {
@@ -57,7 +96,7 @@ const ViewDonations = () => {
     }
     
     setFilteredDonations(result);
-  }, [donations, filters, sortBy]);
+  }, [donations, filters, sortBy, searchQuery]);
 
   // Handle filter changes
   const handleFilterChange = (e) => {
@@ -83,6 +122,11 @@ const ViewDonations = () => {
     setSortBy('expiry');
   };
 
+  // Handle search input
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
   return (
     <div className="container py-5">
       <div className="row mb-4 align-items-center">
@@ -97,9 +141,17 @@ const ViewDonations = () => {
               className="form-control" 
               placeholder="Search by restaurant or food item..." 
               aria-label="Search donations"
+              value={searchQuery}
+              onChange={handleSearch}
             />
-            <button className="btn btn-primary" type="button">
-              <i className="fas fa-search me-1"></i> Search
+            <button 
+              className="btn btn-primary" 
+              type="button"
+              onClick={() => setSearchQuery('')}
+              title={searchQuery ? "Clear search" : "Search"}
+            >
+              <i className={`fas fa-${searchQuery ? 'times' : 'search'} me-1`}></i>
+              {searchQuery ? 'Clear' : 'Search'}
             </button>
           </div>
         </div>
@@ -125,17 +177,23 @@ const ViewDonations = () => {
                 <div className="mb-3">
                   <label htmlFor="foodType" className="form-label">Food Type</label>
                   <select 
-                    className="form-select" 
+                    className={`form-select ${errors.foodType ? 'is-invalid' : ''}`}
                     id="foodType" 
                     name="foodType"
                     value={filters.foodType}
                     onChange={handleFilterChange}
                   >
                     <option value="">All Types</option>
-                    <option value="Cooked Meals">Cooked Meals</option>
+                    <option value="Non-Vegetarian Cooked Meals">Non-Vegetarian Cooked Meals</option>
+                    <option value="Vegetarian Cooked Meals">Vegetarian Cooked Meals</option>
+                    <option value="Grilled / Tandoori">Grilled / Tandoori</option>
+                    <option value="Fried / Steamed">Fried / Steamed</option>
                     <option value="Bakery Items">Bakery Items</option>
+                    <option value="Fresh Produce">Fresh Produce</option>
+                    <option value="Dairy Products">Dairy Products</option>
+                    <option value="Packaged / Dry Foods">Packaged / Dry Foods</option>
+                    <option value="Beverages">Beverages</option>
                     <option value="Mixed Items">Mixed Items</option>
-                    <option value="Raw Ingredients">Raw Ingredients</option>
                   </select>
                 </div>
                 
@@ -215,7 +273,14 @@ const ViewDonations = () => {
                       <p className="card-text mb-2">
                         <strong>Food Items:</strong> {donation.foodItems}
                       </p>
-                      <p className="mb-2"><small>Type: {donation.foodType}</small></p>
+                      <p className="mb-2">
+                        <span className={`badge bg-${getFoodTypeBadgeColor(donation.foodType)} me-2`}>
+                          {donation.foodType}
+                        </span>
+                        {donation.isNew && (
+                          <span className="badge bg-danger ms-1">New</span>
+                        )}
+                      </p>
                       
                       <div className="d-flex justify-content-between mb-2">
                         <span><i className="fas fa-weight me-1"></i> {donation.quantity}</span>
@@ -241,16 +306,33 @@ const ViewDonations = () => {
                         <button className="btn btn-primary">Request Pickup</button>
                       </div>
                     </div>
-                    <div className="card-footer bg-transparent text-muted small">
-                      <i className="fas fa-clock me-1"></i> Posted {donation.postedTime}
-                    </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="alert alert-info">
-              <i className="fas fa-info-circle me-2"></i> No donations match your current filters. Try adjusting your filters or check back later!
+            <div className="text-center py-5">
+              <div className="mb-4">
+                <i className="fas fa-search fa-3x text-muted"></i>
+              </div>
+              <h4>No Donations Found</h4>
+              <p className="text-muted mb-4">
+                {searchQuery 
+                  ? `No donations match your search "${searchQuery}"`
+                  : filters.foodType || filters.distance || filters.expiryTime
+                    ? "No donations match your selected filters"
+                    : "No donations are currently available"
+                }
+              </p>
+              {(searchQuery || filters.foodType || filters.distance || filters.expiryTime) && (
+                <button 
+                  className="btn btn-outline-primary"
+                  onClick={resetFilters}
+                >
+                  <i className="fas fa-redo me-2"></i>
+                  Reset All Filters
+                </button>
+              )}
             </div>
           )}
         </div>
