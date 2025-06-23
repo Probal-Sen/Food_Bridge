@@ -424,26 +424,38 @@ const Register = () => {
                     <div className="row mb-3">
                       <div className="col-md-6">
                         <label htmlFor="ngoType" className="form-label">Organization Type</label>
-                        <input 
-                          type="text" 
-                          className={`form-control ${errors.ngoType ? 'is-invalid' : ''}`}
-                          id="ngoType" 
+                        <select
+                          className={`form-select ${errors.ngoType ? 'is-invalid' : ''}`}
+                          id="ngoType"
                           name="ngoType"
-                          value={formData.ngoType}
+                          value={formData.ngoType || ''}
                           onChange={handleChange}
-                        />
+                        >
+                          <option value="">-- Select Organization Type --</option>
+                          <option value="Food Bank">Food Banks</option>
+                          <option value="Community Kitchens">Community Kitchens</option>
+                          <option value="Emergency Relief NGOs">Emergency Relief NGOs</option>
+                          <option value="Faith-Based Organizations">Faith-Based Organizations</option>
+                          <option value="Other">Other</option>
+                        </select>
                         {errors.ngoType && <div className="invalid-feedback">{errors.ngoType}</div>}
                       </div>
                       <div className="col-md-6">
                         <label htmlFor="serviceArea" className="form-label">Service Area</label>
-                        <input 
-                          type="text" 
-                          className={`form-control ${errors.serviceArea ? 'is-invalid' : ''}`}
-                          id="serviceArea" 
+                        <select
+                          className={`form-select ${errors.serviceArea ? 'is-invalid' : ''}`}
+                          id="serviceArea"
                           name="serviceArea"
-                          value={formData.serviceArea}
+                          value={formData.serviceArea || ''}
                           onChange={handleChange}
-                        />
+                        >
+                          <option value="">-- Select Service Area --</option>
+                          <option value="2">Up to 2 km</option>
+                          <option value="5">Up to 5 km</option>
+                          <option value="10">Up to 10 km</option>
+                          <option value="20">Up to 20 km</option>
+                          <option value="city">City-wide</option>
+                        </select>
                         {errors.serviceArea && <div className="invalid-feedback">{errors.serviceArea}</div>}
                       </div>
                     </div>
