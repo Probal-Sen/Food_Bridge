@@ -394,14 +394,21 @@ const Register = () => {
                   <div className="row mb-3">
                     <div className="col-md-6">
                       <label htmlFor="restaurantType" className="form-label">Restaurant Type</label>
-                      <input 
-                        type="text" 
+                      <select
                         className={`form-control ${errors.restaurantType ? 'is-invalid' : ''}`}
-                        id="restaurantType" 
+                        id="restaurantType"
                         name="restaurantType"
-                        value={formData.restaurantType}
+                        value={formData.restaurantType || ''}
                         onChange={handleChange}
-                      />
+                      >
+                        <option value="">Select type</option>
+                        <option value="Fast Food">Fast Food</option>
+                        <option value="Fine Dining">Fine Dining</option>
+                        <option value="Cafe">Cafe</option>
+                        <option value="Buffet">Buffet</option>
+                        <option value="Casual Dining">Casual Dining</option>
+                        <option value="Food Truck">Food Truck</option>
+                      </select>
                       {errors.restaurantType && <div className="invalid-feedback">{errors.restaurantType}</div>}
                     </div>
                     <div className="col-md-6">
