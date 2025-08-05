@@ -1,17 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import DefaultProfilePic from './DefaultProfilePic';
+import React, { useState, useEffect, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import DefaultProfilePic from "./DefaultProfilePic";
+import { ThemeContext } from "../theme";
+
+// Minimal day/night toggle button
+const DayNightToggle = () => {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  return (
+    <button
+      onClick={toggleTheme}
+      style={{
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        outline: "none",
+        transition: "transform 0.2s",
+        fontSize: "1.5rem",
+        marginRight: "1rem",
+        color: theme === "dark" ? "#FFD700" : "#333",
+      }}
+      title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.9)")}
+      onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      {theme === "dark" ? "🌙" : "☀️"}
+    </button>
+  );
+};
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userType, setUserType] = useState('');
+  const [userType, setUserType] = useState("");
   const [userData, setUserData] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
 
   const checkUserData = () => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
     if (token && user) {
       try {
         const parsedUser = JSON.parse(user);
@@ -19,21 +46,21 @@ const Navbar = () => {
         setUserData(parsedUser);
         setUserType(parsedUser.role);
       } catch (error) {
-        console.error('Error parsing user data:', error);
+        console.error("Error parsing user data:", error);
         setIsLoggedIn(false);
-        setUserType('');
+        setUserType("");
         setUserData(null);
       }
     } else {
       setIsLoggedIn(false);
-      setUserType('');
+      setUserType("");
       setUserData(null);
     }
   };
 
   useEffect(() => {
     checkUserData();
-    
+
     // Listen for profile updates
     const handleProfileUpdate = (event) => {
       const { user } = event.detail;
@@ -51,19 +78,19 @@ const Navbar = () => {
 
     // Listen for storage changes
     const handleStorageChange = (e) => {
-      if (e.key === 'user') {
+      if (e.key === "user") {
         checkUserData();
       }
     };
 
-    window.addEventListener('profileUpdated', handleProfileUpdate);
-    window.addEventListener('userLogin', handleLogin);
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    window.addEventListener("userLogin", handleLogin);
+    window.addEventListener("storage", handleStorageChange);
 
     return () => {
-      window.removeEventListener('profileUpdated', handleProfileUpdate);
-      window.removeEventListener('userLogin', handleLogin);
-      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+      window.removeEventListener("userLogin", handleLogin);
+      window.removeEventListener("storage", handleStorageChange);
     };
   }, []);
 
@@ -73,38 +100,40 @@ const Navbar = () => {
       setIsScrolled(offset > 50);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setIsLoggedIn(false);
-    setUserType('');
+    setUserType("");
     setUserData(null);
     // Dispatch logout event
-    window.dispatchEvent(new CustomEvent('userLogout'));
-    navigate('/');
+    window.dispatchEvent(new CustomEvent("userLogout"));
+    navigate("/");
   };
 
   const getDashboardLink = () => {
-    return userType === 'restaurant' ? '/restaurant/dashboard' : '/ngo/dashboard';
+    return userType === "restaurant"
+      ? "/restaurant/dashboard"
+      : "/ngo/dashboard";
   };
 
   const handleDashboardClick = (e) => {
     if (!isLoggedIn) {
       e.preventDefault();
-      navigate('/login');
+      navigate("/login");
     }
   };
 
   // Function to collapse navbar
   const collapseNavbar = () => {
-    const navbarToggler = document.querySelector('.navbar-toggler');
-    const navbarCollapse = document.querySelector('.navbar-collapse');
+    const navbarToggler = document.querySelector(".navbar-toggler");
+    const navbarCollapse = document.querySelector(".navbar-collapse");
     if (navbarToggler && navbarCollapse) {
-      if (navbarCollapse.classList.contains('show')) {
+      if (navbarCollapse.classList.contains("show")) {
         navbarToggler.click();
       }
     }
@@ -113,10 +142,10 @@ const Navbar = () => {
   // Handle click outside navbar
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const navbar = document.querySelector('.navbar');
-      const navbarCollapse = document.querySelector('.navbar-collapse');
-      
-      if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+      const navbar = document.querySelector(".navbar");
+      const navbarCollapse = document.querySelector(".navbar-collapse");
+
+      if (navbarCollapse && navbarCollapse.classList.contains("show")) {
         // Check if click is outside navbar
         if (!navbar.contains(event.target)) {
           collapseNavbar();
@@ -125,21 +154,29 @@ const Navbar = () => {
     };
 
     // Add click event listener to document
-    document.addEventListener('click', handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
 
     // Cleanup
     return () => {
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
   }, []);
 
   return (
-    <nav className={`navbar navbar-expand-lg fixed-top ${isScrolled ? 'bg-white shadow-sm' : 'navbar-transparent'}`}
-         style={{ transition: 'all 0.3s ease-in-out' }}>
+    <nav
+      className={`navbar navbar-expand-lg fixed-top ${
+        isScrolled ? "bg-white shadow-sm" : "navbar-transparent"
+      }`}
+      style={{ transition: "all 0.3s ease-in-out" }}
+    >
       <div className="container">
-        <Link className="navbar-brand d-flex align-items-center" to="/" onClick={collapseNavbar}>
+        <Link
+          className="navbar-brand d-flex align-items-center"
+          to="/"
+          onClick={collapseNavbar}
+        >
           <i className="fas fa-text-primary"></i>
-          <span style={{ fontSize: '1.3rem' }}>FoodBridge</span>
+          <span style={{ fontSize: "1.3rem" }}>FoodBridge</span>
         </Link>
         <button
           className="navbar-toggler"
@@ -155,15 +192,19 @@ const Navbar = () => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
-              <Link className="nav-link" to="/" onClick={collapseNavbar}>Home</Link>
+              <Link className="nav-link" to="/" onClick={collapseNavbar}>
+                Home
+              </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/about" onClick={collapseNavbar}>About</Link>
+              <Link className="nav-link" to="/about" onClick={collapseNavbar}>
+                About
+              </Link>
             </li>
             {isLoggedIn && (
               <li className="nav-item">
-                <Link 
-                  className="nav-link" 
+                <Link
+                  className="nav-link"
                   to={getDashboardLink()}
                   onClick={(e) => {
                     handleDashboardClick(e);
@@ -174,28 +215,56 @@ const Navbar = () => {
                 </Link>
               </li>
             )}
-            {isLoggedIn && userType === 'restaurant' && (
+            {isLoggedIn && userType === "restaurant" && (
               <li className="nav-item">
-                <Link className="nav-link" to="/donation/new" onClick={collapseNavbar}>Donate Food</Link>
+                <Link
+                  className="nav-link"
+                  to="/donation/new"
+                  onClick={collapseNavbar}
+                >
+                  Donate Food
+                </Link>
               </li>
             )}
-            {isLoggedIn && userType === 'ngo' && (
+            {isLoggedIn && userType === "ngo" && (
               <li className="nav-item">
-                <Link className="nav-link" to="/donations" onClick={collapseNavbar}>Available Donations</Link>
+                <Link
+                  className="nav-link"
+                  to="/donations"
+                  onClick={collapseNavbar}
+                >
+                  Available Donations
+                </Link>
               </li>
             )}
             <li className="nav-item">
-              <Link className="nav-link" to="/contact" onClick={collapseNavbar}>Contact</Link>
+              <Link className="nav-link" to="/contact" onClick={collapseNavbar}>
+                Contact
+              </Link>
             </li>
           </ul>
           <div className="d-flex align-items-center">
             {!isLoggedIn ? (
               <>
-                <Link to="/login" className="btn btn-outline-primary me-2" onClick={collapseNavbar}>Login</Link>
-                <Link to="/register" className="btn btn-primary" onClick={collapseNavbar}>Register</Link>
+                <DayNightToggle />
+                <Link
+                  to="/login"
+                  className="btn btn-outline-primary me-2"
+                  onClick={collapseNavbar}
+                >
+                  Login
+                </Link>
+                <Link
+                  to="/register"
+                  className="btn btn-primary"
+                  onClick={collapseNavbar}
+                >
+                  Register
+                </Link>
               </>
             ) : (
               <>
+                <DayNightToggle />
                 <div className="dropdown">
                   <button
                     className="nav-link dropdown-toggle d-flex align-items-center"
@@ -207,18 +276,18 @@ const Navbar = () => {
                       {userData?.profileImage ? (
                         <img
                           src={userData.profileImage}
-                          alt={userData?.name || 'Profile'}
+                          alt={userData?.name || "Profile"}
                           className="rounded-circle border border-2 border-primary"
-                          style={{ 
-                            width: '40px', 
-                            height: '40px', 
-                            objectFit: 'cover'
+                          style={{
+                            width: "40px",
+                            height: "40px",
+                            objectFit: "cover",
                           }}
                         />
                       ) : (
-                        <DefaultProfilePic 
-                          name={userData?.name || userData?.organizationName} 
-                          size={40} 
+                        <DefaultProfilePic
+                          name={userData?.name || userData?.organizationName}
+                          size={40}
                           fontSize={16}
                         />
                       )}
@@ -226,8 +295,15 @@ const Navbar = () => {
                         <span className="visually-hidden">Online</span>
                       </span>
                     </div>
-                    <span className="ms-2 fw-medium" style={{ color: isScrolled ? 'var(--dark-gray)' : 'var(--dark-gray)' }}>
-                      {userData?.name || userData?.organizationName || 'User'}
+                    <span
+                      className="ms-2 fw-medium"
+                      style={{
+                        color: isScrolled
+                          ? "var(--dark-gray)"
+                          : "var(--dark-gray)",
+                      }}
+                    >
+                      {userData?.name || userData?.organizationName || "User"}
                     </span>
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end">
@@ -235,23 +311,39 @@ const Navbar = () => {
                       Signed in as <br />
                       <span className="fw-bold">{userData?.email}</span>
                     </li>
-                    <li><hr className="dropdown-divider" /></li>
                     <li>
-                      <Link className="dropdown-item" to="/profile" onClick={collapseNavbar}>
+                      <hr className="dropdown-divider" />
+                    </li>
+                    <li>
+                      <Link
+                        className="dropdown-item"
+                        to="/profile"
+                        onClick={collapseNavbar}
+                      >
                         <i className="fas fa-user me-2 text-primary"></i>Profile
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" to={getDashboardLink()} onClick={collapseNavbar}>
-                        <i className="fas fa-tachometer-alt me-2 text-primary"></i>Dashboard
+                      <Link
+                        className="dropdown-item"
+                        to={getDashboardLink()}
+                        onClick={collapseNavbar}
+                      >
+                        <i className="fas fa-tachometer-alt me-2 text-primary"></i>
+                        Dashboard
                       </Link>
                     </li>
-                    <li><hr className="dropdown-divider" /></li>
                     <li>
-                      <button onClick={() => {
-                        handleLogout();
-                        collapseNavbar();
-                      }} className="dropdown-item text-danger">
+                      <hr className="dropdown-divider" />
+                    </li>
+                    <li>
+                      <button
+                        onClick={() => {
+                          handleLogout();
+                          collapseNavbar();
+                        }}
+                        className="dropdown-item text-danger"
+                      >
                         <i className="fas fa-sign-out-alt me-2"></i>Logout
                       </button>
                     </li>
@@ -266,4 +358,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar; 
+export default Navbar;
