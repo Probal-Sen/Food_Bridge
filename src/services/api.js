@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://food-bridge-1-ayed.onrender.com'//'http://localhost:5000/api';
+export const API_URL = 'https://food-bridge-1-ayed.onrender.com/api'; //'http://localhost:5000/api';
 
 // Move the mockDonations array to the top of the file
 const mockDonations = [
