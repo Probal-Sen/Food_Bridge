@@ -12,10 +12,33 @@ console.log('JWT Secret:', process.env.JWT_SECRET);
 console.log('Port:', process.env.PORT);
 
 // CORS configuration
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
-}));
+const frontendEnv = process.env.FRONTEND_URL;
+const allowAllOrigins = !frontendEnv;
+const allowedOrigins = (frontendEnv || 'http://localhost:3000')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+const corsOptions = allowAllOrigins
+  ? {
+      origin: true,
+      credentials: false,
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS']
+    }
+  : {
+      origin: function(origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+          return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'));
+      },
+      credentials: false,
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS']
+    };
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Middleware
 app.use(express.json());
