@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { verificationService } from '../services/api';
+import { verificationService, API_URL } from '../services/api';
 
 const VerificationForm = ({ user }) => {
   const [verificationNumber, setVerificationNumber] = useState('');
@@ -10,8 +10,8 @@ const VerificationForm = ({ user }) => {
   const [status, setStatus] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // API URL for document access
-  const API_URL = 'http://localhost:5001';
+  // Base URL for accessing uploaded documents (strip trailing /api from API_URL)
+  const FILE_BASE_URL = (API_URL || '').replace(/\/api$/, '');
 
   useEffect(() => {
     // Fetch current verification status
@@ -122,7 +122,7 @@ const VerificationForm = ({ user }) => {
 
   const handleViewDocument = () => {
     if (status?.verificationDocument) {
-      const documentUrl = `${API_URL}/${status.verificationDocument}`;
+      const documentUrl = `${FILE_BASE_URL}/${status.verificationDocument}`;
       console.log('Opening document URL:', documentUrl);
       window.open(documentUrl, '_blank');
     }
