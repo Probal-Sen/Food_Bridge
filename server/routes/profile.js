@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Donation = require('../models/Donation');
 const auth = require('../middleware/auth');
 
 // Get user profile
@@ -64,7 +65,7 @@ router.patch('/', auth, async (req, res) => {
 // Get user's donations
 router.get('/donations', auth, async (req, res) => {
   try {
-    const donations = await Donation.find({ donor: req.user.id })
+    const donations = await Donation.find({ donor: req.user.userId })
       .sort({ createdAt: -1 });
     res.json(donations);
   } catch (err) {

@@ -5,6 +5,24 @@ const auth = require('../middleware/auth');
 
 // Submit contact form
 router.post('/', async (req, res) => {
+  // Validate required fields
+  const requiredFields = ['name', 'email', 'subject', 'message'];
+  const missingFields = requiredFields.filter(field => !req.body[field]);
+  
+  if (missingFields.length > 0) {
+    return res.status(400).json({ 
+      message: `Missing required fields: ${missingFields.join(', ')}` 
+    });
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(req.body.email)) {
+    return res.status(400).json({ 
+      message: 'Invalid email format' 
+    });
+  }
+
   const contact = new Contact({
     name: req.body.name,
     email: req.body.email,

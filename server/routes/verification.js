@@ -40,7 +40,7 @@ const upload = multer({
 });
 
 // Submit verification documents
-router.post('/submit', auth, upload.single('verificationDocument'), async (req, res) => {
+router.post('/submit', auth, upload.single('verificationDocument'), async (req, res, next) => {
   try {
     const { verificationNumber, verificationExpiry } = req.body;
     
@@ -71,6 +71,14 @@ router.post('/submit', auth, upload.single('verificationDocument'), async (req, 
     console.error('Error submitting verification:', error);
     res.status(500).json({ message: 'Error submitting verification documents' });
   }
+});
+
+// Error handling for multer
+router.use((error, req, res, next) => {
+  if (error.message && error.message.includes('Invalid file type')) {
+    return res.status(400).json({ message: error.message });
+  }
+  next(error);
 });
 
 // Get verification status

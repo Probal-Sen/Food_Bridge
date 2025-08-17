@@ -54,7 +54,7 @@ router.post('/register', async (req, res) => {
     // Generate token
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET || 'your_jwt_secret_key_here',
+      process.env.JWT_SECRET || 'f8a4c9e0b37f4e6d8c1a9f527b6e3d94a2f58b7e6f913d8c4e5b7f6a8c2d9e1f',
       { expiresIn: '24h' }
     );
 
@@ -81,6 +81,11 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     console.log('Login attempt:', email);
 
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
     // Check if database is connected
     if (mongoose.connection.readyState !== 1) {
       console.log('Database not connected, using mock authentication');
@@ -102,7 +107,7 @@ router.post('/login', async (req, res) => {
         
         const token = jwt.sign(
           { userId: mockUser._id },
-          process.env.JWT_SECRET || 'your_jwt_secret_key_here',
+          process.env.JWT_SECRET || 'f8a4c9e0b37f4e6d8c1a9f527b6e3d94a2f58b7e6f913d8c4e5b7f6a8c2d9e1f',
           { expiresIn: '24h' }
         );
         
@@ -129,7 +134,7 @@ router.post('/login', async (req, res) => {
     // Generate token
     const token = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET || 'your_jwt_secret_key_here',
+      process.env.JWT_SECRET || 'f8a4c9e0b37f4e6d8c1a9f527b6e3d94a2f58b7e6f913d8c4e5b7f6a8c2d9e1f',
       { expiresIn: '24h' }
     );
 
