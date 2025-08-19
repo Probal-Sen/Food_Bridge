@@ -1,33 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DefaultProfilePic from "./DefaultProfilePic";
-import { ThemeContext } from "../theme";
-
-// Minimal day/night toggle button
-const DayNightToggle = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
-  return (
-    <button
-      onClick={toggleTheme}
-      style={{
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        outline: "none",
-        transition: "transform 0.2s",
-        fontSize: "1.5rem",
-        marginRight: "1rem",
-        color: theme === "dark" ? "#FFD700" : "#333",
-      }}
-      title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.9)")}
-      onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
-      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-    >
-      {theme === "dark" ? "🌙" : "☀️"}
-    </button>
-  );
-};
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -246,7 +219,6 @@ const Navbar = () => {
           <div className="d-flex align-items-center">
             {!isLoggedIn ? (
               <>
-                <DayNightToggle />
                 <Link
                   to="/login"
                   className="btn btn-outline-primary me-2"
@@ -264,7 +236,6 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <DayNightToggle />
                 <div className="dropdown">
                   <button
                     className="nav-link dropdown-toggle d-flex align-items-center"
