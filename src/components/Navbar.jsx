@@ -1,6 +1,61 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import DefaultProfilePic from "./DefaultProfilePic";
+import { ThemeContext } from "../Theme";
+
+
+
+// Mobile theme toggle (visible only on mobile, positioned left of hamburger)
+const DayNightToggleMobile = () => {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  return (
+    <button
+      onClick={toggleTheme}
+      className="theme-toggle-btn d-lg-none me-2"
+      style={{
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        outline: "none",
+        transition: "transform 0.2s",
+        fontSize: "1.5rem",
+        color: theme === "dark" ? "#FFD700" : "#333",
+      }}
+      title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.9)")}
+      onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      {theme === "dark" ? "🌙" : "☀️"}
+    </button>
+  );
+};
+
+// Desktop theme toggle (visible only on desktop)
+const DayNightToggleDesktop = () => {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+  return (
+    <button
+      onClick={toggleTheme}
+      className="theme-toggle-btn d-none d-lg-inline me-3"
+      style={{
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        outline: "none",
+        transition: "transform 0.2s",
+        fontSize: "1.5rem",
+        color: theme === "dark" ? "#FFD700" : "#333",
+      }}
+      title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.9)")}
+      onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+    >
+      {theme === "dark" ? "🌙" : "☀️"}
+    </button>
+  );
+};
 
 const Navbar = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -143,25 +198,34 @@ const Navbar = () => {
       style={{ transition: "all 0.3s ease-in-out" }}
     >
       <div className="container">
+        {/* Brand */}
         <Link
           className="navbar-brand d-flex align-items-center"
           to="/"
           onClick={collapseNavbar}
         >
-          <i className="fas fa-text-primary"></i>
+          {/* //////////////////////////////////////////////////// */}
+          <i className="fas fa-utensils text-primary me-2"></i>
           <span style={{ fontSize: "1.3rem" }}>FoodBridge</span>
         </Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <i className="fas fa-bars text-dark"></i>
-        </button>
+
+        {/* Mobile Controls (Theme Toggle + Hamburger) */}
+        <div className="d-flex align-items-center d-lg-none">
+          <DayNightToggleMobile />
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNav"
+            aria-controls="navbarNav"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <i className="fas fa-bars text-dark"></i>
+          </button>
+        </div>
+{/* ////////////////////////////////////////////////////////////////// */}
+        {/* Navbar Collapse */}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto">
             <li className="nav-item">
@@ -216,9 +280,12 @@ const Navbar = () => {
               </Link>
             </li>
           </ul>
+
+          {/* Desktop Right Side Actions */}
           <div className="d-flex align-items-center">
             {!isLoggedIn ? (
               <>
+                <DayNightToggleDesktop />
                 <Link
                   to="/login"
                   className="btn btn-outline-primary me-2"
@@ -236,6 +303,7 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                <DayNightToggleDesktop />
                 <div className="dropdown">
                   <button
                     className="nav-link dropdown-toggle d-flex align-items-center"
