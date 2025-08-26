@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useContext } from "react";
+import { ThemeContext } from "./../Theme"
 
 const About = () => {
+  const { theme } = useContext(ThemeContext);
   return (
     <div>
       {/* Hero Section */}
@@ -53,7 +56,7 @@ const About = () => {
       </section>
 
       {/* Problem & Solution Section */}
-      <section className="py-5 bg-light">
+      <section className={`py-5 ${theme === "dark" ? "bg-dark text-light" : "bg-light text-dark"}`}>
         <div className="container px-4">
           <div className="row gx-5 justify-content-center mb-5">
             <div className="col-lg-8 text-center">
